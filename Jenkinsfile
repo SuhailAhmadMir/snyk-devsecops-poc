@@ -23,12 +23,15 @@ pipeline {
     stage('Snyk Open Source Scan') {
       steps {
         dir('app') {
-          sh(script: 'snyk test', returnStatus: true)
+          // Generate JSON report
+          sh(script: 'snyk test --json > snyk-report.json || true', returnStatus: true)
+          // Jenkins UI display
+          recordIssues tools: [snyk(pattern: 'app/snyk-report.json')]
         }
       }
     }
 
-    // Disabled due to Snyk Code not being enabled in your org
+    // Snyk Code Scan is disabled for now
     // stage('Snyk Code Scan') {
     //   steps {
     //     dir('app') {
@@ -65,6 +68,13 @@ pipeline {
           sh(script: 'snyk monitor', returnStatus: true)
         }
       }
+    }
+  }
+
+  post {
+    always {
+      // Save the Snyk JSON report as a build artifact
+      archiveArtifacts artifacts: 'app/snyk-report.json', onlyIfSuccessful: false
     }
   }
 }
