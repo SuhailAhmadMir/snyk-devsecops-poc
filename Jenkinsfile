@@ -23,7 +23,7 @@ pipeline {
     stage('Snyk Open Source Scan') {
       steps {
         dir('app') {
-          sh 'snyk test'
+          sh(script: 'snyk test', returnStatus: true)
         }
       }
     }
