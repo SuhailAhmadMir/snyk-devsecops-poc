@@ -1,0 +1,4 @@
+version: v1.20.0
+ignore:
+  "npm:lodash:20180130":
+    - '*'
