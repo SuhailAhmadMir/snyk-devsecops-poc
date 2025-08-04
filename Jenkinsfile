@@ -23,22 +23,11 @@ pipeline {
     stage('Snyk Open Source Scan') {
       steps {
         dir('app') {
-          // Generate JSON report
+          // Generate JSON report (non-blocking)
           sh(script: 'snyk test --json > snyk-report.json || true', returnStatus: true)
-          // Jenkins UI display
-          recordIssues tools: [snyk(pattern: 'app/snyk-report.json')]
         }
       }
     }
-
-    // Snyk Code Scan is disabled for now
-    // stage('Snyk Code Scan') {
-    //   steps {
-    //     dir('app') {
-    //       sh(script: 'snyk code test', returnStatus: true)
-    //     }
-    //   }
-    // }
 
     stage('Build Docker Image') {
       steps {
@@ -50,14 +39,14 @@ pipeline {
 
     stage('Snyk Container Scan') {
       steps {
-        sh(script: 'snyk container test snyk-demo-app', returnStatus: true)
+        sh(script: 'snyk container test snyk-demo-app || true', returnStatus: true)
       }
     }
 
     stage('Snyk IaC Scan') {
       steps {
         dir('terraform') {
-          sh(script: 'snyk iac test main.tf', returnStatus: true)
+          sh(script: 'snyk iac test main.tf || true', returnStatus: true)
         }
       }
     }
@@ -65,7 +54,7 @@ pipeline {
     stage('Monitor Deployment') {
       steps {
         dir('app') {
-          sh(script: 'snyk monitor', returnStatus: true)
+          sh(script: 'snyk monitor || true', returnStatus: true)
         }
       }
     }
@@ -73,7 +62,6 @@ pipeline {
 
   post {
     always {
-      // Save the Snyk JSON report as a build artifact
       archiveArtifacts artifacts: 'app/snyk-report.json', onlyIfSuccessful: false
     }
   }
