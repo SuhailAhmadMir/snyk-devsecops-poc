@@ -29,6 +29,25 @@ pipeline {
       }
     }
 
+    stage('Check Critical Vulns') {
+      steps {
+        script {
+          def snykReport = readJSON file: 'app/snyk-report.json'
+          def criticalVulns = snykReport.vulnerabilities.findAll { it.severity == 'critical' }
+          
+          if (criticalVulns.size() > 0) {
+            echo "❌ Critical vulnerabilities found: ${criticalVulns.size()}"
+            criticalVulns.each {
+              echo "- ${it.title} (package: ${it.packageName}, version: ${it.version})"
+            }
+            error("❌ Build failed due to critical vulnerabilities!")
+          } else {
+            echo "✅ No critical vulnerabilities found."
+          }
+        }
+      }
+    }
+
     stage('Build Docker Image') {
       steps {
         dir('app') {
