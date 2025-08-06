@@ -33,16 +33,14 @@ pipeline {
       steps {
         script {
           def snykReport = readJSON file: 'app/snyk-report.json'
-          def criticalVulns = snykReport.vulnerabilities.findAll { it.severity == 'critical' }
-          
-          if (criticalVulns.size() > 0) {
-            echo "❌ Critical vulnerabilities found: ${criticalVulns.size()}"
-            criticalVulns.each {
-              echo "- ${it.title} (package: ${it.packageName}, version: ${it.version})"
-            }
-            error("❌ Build failed due to critical vulnerabilities!")
+          def highCount = snykReport.vulnerabilities.count { it.severity == 'high' }
+    
+          echo "High Severity Vulnerabilities Found: ${highCount}"
+    
+          if (highCount > 1) {
+            error("❌ Build failed due to more than 1 high severity vulnerability.")
           } else {
-            echo "✅ No critical vulnerabilities found."
+            echo "✅ Vulnerability check passed: High vulnerabilities <= 1"
           }
         }
       }
