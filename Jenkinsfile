@@ -38,7 +38,7 @@ pipeline {
           echo "High Severity Vulnerabilities Found: ${highCount}"
     
           if (highCount > 5) {
-            error("❌ Build failed due to more than 1 high severity vulnerability.")
+            error("❌ Build failed due to more than 5 high severity vulnerability.")
           } else {
             echo "✅ Vulnerability check passed: High vulnerabilities <= 1"
           }
